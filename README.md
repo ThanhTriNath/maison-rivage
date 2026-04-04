@@ -10,4 +10,6 @@
 + Produits de la mer issus de la pêche durable
 + Présentation artistique des plats
 + Expérience immersive (sensorielle et esthétique)
+  > Le restaurant se positionne comme une destination culinaire haut de gamme à Marseille !
+
 
