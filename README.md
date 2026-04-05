@@ -1,4 +1,5 @@
 ### Maison Rivage
+---
 > [!Note]
 > Si vous voulez nous contacter, n'hésitez pas à visiter la page _À propos de nous_!
 
