@@ -3,7 +3,7 @@
 > [!Note]
 > Si vous voulez nous contacter, n'hésitez pas à visiter la page _À propos de nous_!
 
-<u>1. Informations et présentation au client</u>
+<ins>1. Informations et présentation au client</ins>
 
 > ### Présentation de l'enseigne
 
