@@ -1,3 +1,8 @@
+<html>
+   <head>
+      <link rel="icon" href="Elegant Monogram Logo for Maison Rivage.png" type="image/jpeg">
+   </head>
+</html>
 # Maison Rivage
 ---
 > [!Note]
