@@ -1,9 +1,3 @@
-<html>
-   <head>
-      <link rel="icon" href="logo-resto.png" type="image/png">
-   </head>
-</html>
-
 # Maison Rivage
 ---
 > [!Note]
