@@ -5,7 +5,6 @@
 </html>
 
 # Maison Rivage
-<link rel="icon" href="logo-resto.png" type="image/png">
 ---
 > [!Note]
 > Si vous voulez nous contacter, n'hésitez pas à visiter la page _À propos de nous_!
