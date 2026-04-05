@@ -1,6 +1,6 @@
 <html>
    <head>
-      <link rel="icon" href="Elegant Monogram Logo for Maison Rivage.png" type="image/jpeg">
+      <link rel="icon" href="Elegant Monogram Logo for Maison Rivage.png" type="image/png">
    </head>
 </html>
 
