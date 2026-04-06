@@ -6,3 +6,4 @@ remote_theme: jeromelachaud/freelancer-theme
 
 plugins:
   - jekyll-remote-theme
+  
