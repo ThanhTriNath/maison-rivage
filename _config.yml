@@ -1,7 +1,6 @@
 title: Maison Rivage
 description: Un authentique restaurant de cuisine gastronomique provençale ravissant le palais des amateurs comme des spécialistes !
 
-theme: jekyll-theme-freelancer
 remote_theme: jeromelachaud/freelancer-theme
 
 plugins:
