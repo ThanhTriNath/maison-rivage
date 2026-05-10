@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Maison Rivage</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0D1B2A',
+                        sand: '#E0C097',
+                        cream: '#FAF9F6',
+                        gold: '#C6A769'
+                    },
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        html, body { height: 100%; margin: 0; }
+        .app-wrapper { height: 100vh; overflow-y: auto; overflow-x: hidden; }
+        .btn-gold { background: linear-gradient(135deg, #C6A769, #E0C097); transition: all 0.3s ease; cursor: pointer; }
+        .btn-gold:hover { background: linear-gradient(135deg, #b8954f, #C6A769); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(198,167,105,0.4); }
+        .sidebar { backdrop-filter: blur(10px); background: rgba(13,27,42,0.95); }
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover, .nav-item.active { background: rgba(198,167,105,0.2); border-left: 3px solid #C6A769; padding-left: calc(1.5rem - 3px); }
+        .gallery-preview { aspect-ratio: 1; object-fit: cover; border-radius: 0.75rem; }
+        .upload-zone { border: 2px dashed #C6A769; border-radius: 1rem; transition: all 0.3s ease; }
+        .upload-zone:hover { background: rgba(198,167,105,0.05); }
+        .upload-zone.drag-over { background: rgba(198,167,105,0.15); border-color: #b8954f; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(13,27,42,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-overlay.hidden { display: none; }
+        .modal-content { background: white; border-radius: 1.5rem; padding: 2rem; max-width: 600px; width: 90%; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #C6A769; box-shadow: 0 0 0 3px rgba(198,167,105,0.15); }
+        body { box-sizing: border-box; }
+    </style>
+</head>
+
+<body class="h-full bg-cream font-sans text-navy">
+    <div class="app-wrapper" id="app-wrapper">
+        
+        <!-- Login Page -->
+        <div id="login-page" class="w-full h-screen flex items-center justify-center bg-gradient-to-br from-navy to-navy/90">
+            <div class="w-full max-w-md px-6">
+                <div class="text-center mb-10">
+                    <svg width="60" height="60" viewBox="0 0 40 40" fill="none" class="mx-auto mb-6">
+                        <path d="M5 25C10 18 15 28 20 20C25 12 30 22 35 15" stroke="#C6A769" stroke-width="2" stroke-linecap="round" />
+                        <path d="M5 30C10 23 15 33 20 25C25 17 30 27 35 20" stroke="#E0C097" stroke-width="1.5" stroke-linecap="round" opacity="0.6" />
+                        <circle cx="20" cy="12" r="3" fill="#C6A769" opacity="0.8" />
+                    </svg>
+                    <h1 class="font-serif text-3xl text-cream font-light mb-2">Maison Rivage</h1>
+                    <p class="text-cream/60 text-sm">Espace Administrateur</p>
+                </div>
+                
+                <form id="login-form" class="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-cream/10">
+                    <div class="mb-6">
+                        <label for="username" class="block text-cream text-sm font-medium mb-2">Identifiant</label>
+                        <input type="text" id="username" required class="w-full px-4 py-3 rounded-lg bg-cream/10 border border-cream/20 text-cream placeholder:text-cream/50 focus:border-gold focus:bg-cream/20 transition-all" placeholder="Votre identifiant">
+                    </div>
+                    
+                    <div class="mb-8">
+                        <label for="password" class="block text-cream text-sm font-medium mb-2">Mot de passe</label>
+                        <input type="password" id="password" required class="w-full px-4 py-3 rounded-lg bg-cream/10 border border-cream/20 text-cream placeholder:text-cream/50 focus:border-gold focus:bg-cream/20 transition-all" placeholder="Votre mot de passe">
+                    </div>
+                    
+                    <button type="submit" class="w-full btn-gold text-navy py-3 rounded-lg font-semibold text-sm tracking-wide mb-4">Se connecter</button>
+                    
+                    <div id="login-error" class="hidden p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-200 text-sm text-center">
+                        Identifiant ou mot de passe incorrect
+                    </div>
+                </form>
+                
+                <p class="text-cream/40 text-xs text-center mt-6">Connexion sécurisée • Tokens JWT</p>
+            </div>
+        </div>
+        
+        <!-- Admin Dashboard -->
+        <div id="admin-page" class="hidden flex h-full">
+            
+            <!-- Sidebar -->
+            <div class="sidebar w-64 border-r border-navy/20 p-6 flex flex-col">
+                <div class="flex items-center gap-3 mb-10">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <path d="M5 25C10 18 15 28 20 20C25 12 30 22 35 15" stroke="#C6A769" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <div>
+                        <p class="font-serif text-cream text-lg font-semibold">Maison Rivage</p>
+                        <p class="text-cream/50 text-xs">Admin</p>
+                    </div>
+                </div>
+                
+                <nav class="flex-1 space-y-2">
+                    <button class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-cream/80 hover:text-cream transition-colors" data-section="gallery">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                        <span>Galerie</span>
+                    </button>
+                    <button class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-cream/80 hover:text-cream transition-colors" data-section="settings">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        <span>Paramètres</span>
+                    </button>
+                    <button class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-cream/80 hover:text-cream transition-colors" data-section="reservations">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                        <span>Réservations</span>
+                    </button>
+                </nav>
+                
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-cream/80 hover:text-red-400 border-t border-cream/10 pt-4 mt-6 transition-colors">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex-1 overflow-y-auto bg-cream/50">
+                
+                <!-- Gallery Section -->
+                <section id="gallery-section" class="p-8">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="flex items-center justify-between mb-8">
+                            <div>
+                                <h1 class="font-serif text-4xl text-navy font-light mb-2">Galerie</h1>
+                                <p class="text-navy/50">Gérez les images de votre galerie</p>
+                            </div>
+                            <button id="add-gallery-btn" class="btn-gold text-navy px-6 py-3 rounded-lg font-semibold text-sm flex items-center gap-2">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                                Ajouter une image
+                            </button>
+                        </div>
+                        
+                        <!-- Gallery Grid -->
+                        <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div class="gallery-preview bg-gray-200 relative group cursor-pointer">
+                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <svg class="w-12 h-12 text-gold/40 absolute inset-0 m-auto" viewBox="0 0 50 50" fill="none">
+                                    <rect x="12" y="12" width="26" height="26" rx="4" stroke="currentColor" stroke-width="1" />
+                                    <circle cx="20" cy="20" r="3" stroke="currentColor" stroke-width="0.8" />
+                                    <path d="M38 18L42 14M38 18L34 14" stroke="currentColor" stroke-width="1" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Settings Section -->
+                <section id="settings-section" class="hidden p-8">
+                    <div class="max-w-4xl mx-auto">
+                        <h1 class="font-serif text-4xl text-navy font-light mb-8">Paramètres</h1>
+                        
+                        <div class="bg-white rounded-2xl p-8 shadow-lg shadow-navy/5">
+                            <h2 class="font-serif text-2xl text-navy mb-6 font-light">Informations du Restaurant</h2>
+                            
+                            <form id="settings-form" class="space-y-6">
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy/70 mb-2">Titre Héro</label>
+                                        <input type="text" id="hero-title-input" class="w-full px-4 py-3 rounded-lg border border-navy/10 bg-cream/50 transition-all" placeholder="L'élégance de la Méditerranée...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy/70 mb-2">Nom du Chef</label>
+                                        <input type="text" id="chef-name-input" class="w-full px-4 py-3 rounded-lg border border-navy/10 bg-cream/50 transition-all" placeholder="Antoine Dumas">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-navy/70 mb-2">Description du Restaurant</label>
+                                    <textarea id="restaurant-desc-input" rows="4" class="w-full px-4 py-3 rounded-lg border border-navy/10 bg-cream/50 transition-all resize-none" placeholder="Maison Rivage célèbre..."></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn-gold text-navy px-6 py-3 rounded-lg font-semibold text-sm">Sauvegarder</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Reservations Section -->
+                <section id="reservations-section" class="hidden p-8">
+                    <div class="max-w-6xl mx-auto">
+                        <h1 class="font-serif text-4xl text-navy font-light mb-8">Réservations</h1>
+                        
+                        <div class="bg-white rounded-2xl shadow-lg shadow-navy/5 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-navy/5 border-b border-navy/10">
+                                        <tr>
+                                            <th class="px-6 py-4 text-left text-sm font-semibold text-navy">Nom</th>
+                                            <th class="px-6 py-4 text-left text-sm font-semibold text-navy">Email</th>
+                                            <th class="px-6 py-4 text-left text-sm font-semibold text-navy">Téléphone</th>
+                                            <th class="px-6 py-4 text-left text-sm font-semibold text-navy">Date</th>
+                                            <th class="px-6 py-4 text-left text-sm font-semibold text-navy">Personnes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reservations-table" class="divide-y divide-navy/10">
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-8 text-center text-navy/50">Aucune réservation pour le moment</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour ajouter une image -->
+    <div id="add-image-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-serif text-2xl text-navy font-light">Ajouter une image</h2>
+                <button id="modal-close" class="text-navy/50 hover:text-navy">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="image-upload-form" class="space-y-6">
+                <div class="upload-zone p-8 flex flex-col items-center justify-center" id="drop-zone">
+                    <i data-lucide="upload-cloud" class="w-12 h-12 text-gold/40 mb-3"></i>
+                    <p class="text-navy/70 font-medium mb-1">Glissez-déposez votre image ici</p>
+                    <p class="text-navy/50 text-sm mb-4">ou</p>
+                    <input type="file" id="image-input" accept="image/*" class="hidden">
+                    <button type="button" id="browse-btn" class="btn-gold text-navy px-6 py-2 rounded-lg font-semibold text-sm">
+                        Parcourir les fichiers
+                    </button>
+                </div>
+                
+                <div id="image-preview" class="hidden">
+                    <img id="preview-img" src="" alt="Aperçu" class="w-full h-48 object-cover rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-navy/70 mb-2">Description</label>
+                    <input type="text" id="image-description" class="w-full px-4 py-3 rounded-lg border border-navy/10 bg-cream/50 transition-all" placeholder="Description de l'image">
+                </div>
+                
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 btn-gold text-navy py-3 rounded-lg font-semibold text-sm">Uploader</button>
+                    <button type="button" id="modal-cancel" class="flex-1 px-6 py-3 rounded-lg border border-navy/20 text-navy font-semibold text-sm hover:bg-navy/5 transition-colors">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // ===== CONFIGURATION =====
+        const CONFIG = {
+            username: 'admin_maison_rivage',
+            password: 'SecurePass2024!RivageMed',
+            tokenSecret: 'sk_MaisonRivage_2024_Token_Secret_Key_12345'
+        };
+        
+        const TOKEN_KEY = 'admin_token';
+        const GALLERY_KEY = 'gallery_images';
+        const RESERVATIONS_KEY = 'reservations_data';
+        
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            initializeApp();
+        });
+        
+        function initializeApp() {
+            if (isLoggedIn()) {
+                showAdminPage();
+                loadGalleryImages();
+                loadSettings();
+                loadReservations();
+            } else {
+                showLoginPage();
+                initializeLogin();
+            }
+        }
+        
+        // ===== AUTHENTICATION =====
+        function isLoggedIn() {
+            return localStorage.getItem(TOKEN_KEY) !== null;
+        }
+        
+        function initializeLogin() {
+            const form = document.getElementById('login-form');
+            const errorDiv = document.getElementById('login-error');
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (username === CONFIG.username && password === CONFIG.password) {
+                    // Créer un token JWT simple
+                    const token = generateToken(username);
+                    localStorage.setItem(TOKEN_KEY, token);
+                    errorDiv.classList.add('hidden');
+                    
+                    setTimeout(() => {
+                        showAdminPage();
+                        loadGalleryImages();
+                        loadSettings();
+                        loadReservations();
+                    }, 300);
+                } else {
+                    errorDiv.classList.remove('hidden');
+                    document.getElementById('password').value = '';
+                }
+            });
+        }
+        
+        function generateToken(username) {
+            const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+            const payload = btoa(JSON.stringify({ 
+                username, 
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24h expiry
+            }));
+            const signature = btoa(CONFIG.tokenSecret);
+            return `${header}.${payload}.${signature}`;
+        }
+        
+        // ===== UI MANAGEMENT =====
+        function showLoginPage() {
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('admin-page').classList.add('hidden');
+        }
+        
+        function showAdminPage() {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('admin-page').classList.remove('hidden');
+            initializeNavigation();
+        }
+        
+        function initializeNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('[id$="-section"]');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    
+                    // Update active state
+                    navItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Show section
+                    sections.forEach(s => s.classList.add('hidden'));
+                    document.getElementById(`${section}-section`).classList.remove('hidden');
+                });
+            });
+            
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem(TOKEN_KEY);
+                localStorage.removeItem(GALLERY_KEY);
+                showLoginPage();
+                document.getElementById('login-form').reset();
+                document.getElementById('login-error').classList.add('hidden');
+            });
+        }
+        
+        // ===== GALLERY MANAGEMENT =====
+        function loadGalleryImages() {
+            const images = JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]');
+            const grid = document.getElementById('gallery-grid');
+            
+            if (images.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-navy/50 py-12">Aucune image. Cliquez sur "Ajouter une image"</p>';
+                return;
+            }
+            
+            grid.innerHTML = images.map((img, index) => `
+                <div class="gallery-preview bg-gray-200 relative group cursor-pointer overflow-hidden">
+                    <img src="${img.src}" alt="${img.description}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg delete-image-btn" data-index="${index}">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+            
+            // Delete handlers
+            document.querySelectorAll('.delete-image-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const index = btn.dataset.index;
+                    deleteImage(index);
+                });
+            });
+        }
+        
+        function deleteImage(index) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                const images = JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]');
+                images.splice(index, 1);
+                localStorage.setItem(GALLERY_KEY, JSON.stringify(images));
+                loadGalleryImages();
+            }
+        }
+        
+        document.getElementById('add-gallery-btn').addEventListener('click', () => {
+            document.getElementById('add-image-modal').classList.remove('hidden');
+        });
+        
+        document.getElementById('modal-close').addEventListener('click', () => {
+            document.getElementById('add-image-modal').classList.add('hidden');
+            resetImageForm();
+        });
+        
+        document.getElementById('modal-cancel').addEventListener('click', () => {
+            document.getElementById('add-image-modal').classList.add('hidden');
+            resetImageForm();
+        });
+        
+        document.getElementById('add-image-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'add-image-modal') {
+                document.getElementById('add-image-modal').classList.add('hidden');
+                resetImageForm();
+            }
+        });
+        
+        // Image upload handlers
+        const dropZone = document.getElementById('drop-zone');
+        const imageInput = document.getElementById('image-input');
+        const browseBtn = document.getElementById('browse-btn');
+        
+        browseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            imageInput.click();
+        });
+        
+        imageInput.addEventListener('change', (e) => {
+            handleImageSelect(e.target.files[0]);
+        });
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                imageInput.files = e.dataTransfer.files;
+                handleImageSelect(file);
+            }
+        });
+        
+        function handleImageSelect(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('image-preview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        document.getElementById('image-upload-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const preview = document.getElementById('preview-img').src;
+            const description = document.getElementById('image-description').value;
+            
+            if (!preview) return;
+            
+            const images = JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]');
+            images.push({ src: preview, description });
+            localStorage.setItem(GALLERY_KEY, JSON.stringify(images));
+            
+            document.getElementById('add-image-modal').classList.add('hidden');
+            resetImageForm();
+            loadGalleryImages();
+        });
+        
+        function resetImageForm() {
+            document.getElementById('image-upload-form').reset();
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-input').value = '';
+        }
+        
+        // ===== SETTINGS =====
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('site_settings') || '{"heroTitle":"L\'élégance de la Méditerranée dans votre assiette","chefName":"Antoine Dumas","restaurantDesc":"Maison Rivage célèbre la richesse de la Méditerranée à travers une cuisine inventive et respectueuse."}');
+            
+            document.getElementById('hero-title-input').value = settings.heroTitle || '';
+            document.getElementById('chef-name-input').value = settings.chefName || '';
+            document.getElementById('restaurant-desc-input').value = settings.restaurantDesc || '';
+            
+            document.getElementById('settings-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const updatedSettings = {
+                    heroTitle: document.getElementById('hero-title-input').value,
+                    chefName: document.getElementById('chef-name-input').value,
+                    restaurantDesc: document.getElementById('restaurant-desc-input').value
+                };
+                
+                localStorage.setItem('site_settings', JSON.stringify(updatedSettings));
+                alert('Paramètres sauvegardés avec succès !');
+            });
+        }
+        
+        // ===== RESERVATIONS =====
+        function loadReservations() {
+            const reservations = JSON.parse(localStorage.getItem(RESERVATIONS_KEY) || '[]');
+            const table = document.getElementById('reservations-table');
+            
+            if (reservations.length === 0) {
+                table.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-navy/50">Aucune réservation pour le moment</td></tr>';
+                return;
+            }
+            
+            table.innerHTML = reservations.map(res => `
+                <tr>
+                    <td class="px-6 py-4 text-sm text-navy">${res.name}</td>
+                    <td class="px-6 py-4 text-sm text-navy">${res.email}</td>
+                    <td class="px-6 py-4 text-sm text-navy">${res.phone}</td>
+                    <td class="px-6 py-4 text-sm text-navy">${res.date} à ${res.time}</td>
+                    <td class="px-6 py-4 text-sm text-navy">${res.guests}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // Hook pour sauvegarder les réservations depuis le site principal
+        window.saveReservation = function(reservationData) {
+            const reservations = JSON.parse(localStorage.getItem(RESERVATIONS_KEY) || '[]');
+            reservations.push(reservationData);
+            localStorage.setItem(RESERVATIONS_KEY, JSON.stringify(reservations));
+        };
+    </script>
+</body>
+</html>
